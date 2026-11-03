@@ -97,7 +97,7 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
       <div className="camera-box">
         {scanning ? (
           <div className="video-wrapper">
-            <video ref={videoRef} className="scanner-video" />
+            <video ref={videoRef} className="scanner-video" autoPlay playsInline muted />
             <button className="btn-secondary btn-stop" onClick={stopScanning}>
               Parar Câmera ✕
             </button>
