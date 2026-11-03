@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { BrowserBarcodeReader } from '@zxing/library';
 import { searchBookByIsbnOrQuery } from '../../services/googleBooks';
 import './BookScanner.css';
@@ -19,25 +19,9 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
     codeReaderRef.current = new BrowserBarcodeReader();
 
     try {
-      // Solicita permissão explícita da câmera ao navegador
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      
-      // Libera o stream temporariamente para o ZXing usar o elemento de vídeo
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-
-      const videoInputDevices = await BrowserBarcodeReader.listVideoInputDevices();
-      const selectedDeviceId = videoInputDevices[0]?.deviceId;
-
-      if (!selectedDeviceId) {
-        setScanError('Nenhuma câmera traseira/frontal encontrada.');
-        setScanning(false);
-        return;
-      }
-
+      // Inicia a leitura diretamente pelo elemento de vídeo sem precisar listar dispositivos manualmente
       codeReaderRef.current.decodeFromVideoDevice(
-        selectedDeviceId,
+        undefined, // Passar undefined faz o ZXing escolher a câmera padrão automaticamente
         videoRef.current,
         async (result, err) => {
           if (result) {
@@ -56,17 +40,13 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
         }
       );
     } catch (err) {
-      console.error('Erro de permissão da câmera:', err);
-      setScanError('Permissão de câmera negada ou indisponível neste navegador. Verifique o ícone de bloqueio na barra de endereços.');
+      console.error('Erro ao iniciar o scanner:', err);
+      setScanError('Não foi possível iniciar o leitor de código de barras. Verifique as permissões.');
       setScanning(false);
     }
   };
 
   const stopScanning = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = videoRef.current.srcObject.getTracks();
-      tracks.forEach(track => track.stop());
-    }
     if (codeReaderRef.current) {
       codeReaderRef.current.reset();
     }
@@ -117,7 +97,7 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
       <div className="camera-box">
         {scanning ? (
           <div className="video-wrapper">
-            <video ref={videoRef} className="scanner-video" autoPlay playsInline muted />
+            <video ref={videoRef} className="scanner-video" />
             <button className="btn-secondary btn-stop" onClick={stopScanning}>
               Parar Câmera ✕
             </button>
