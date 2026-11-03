@@ -1,80 +1,49 @@
 import { useState, useRef } from 'react';
 import { BrowserBarcodeReader } from '@zxing/library';
-import { searchBookByIsbnOrQuery } from '../../services/bookService';
+import { searchBookByIsbnOrQuery } from '../../services/googleBooks';
 import './BookScanner.css';
 
 export default function BookScanner({ onConfirmBooks, onNext }) {
   const [detectedBooks, setDetectedBooks] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [scanning, setScanning] = useState(false);
   const [scanError, setScanError] = useState('');
 
-  const videoRef = useRef(null);
-  const codeReaderRef = useRef(null);
+  const fileInputRef = useRef(null);
 
-  // Iniciar a câmera manualmente e depois aplicar o leitor de código de barras
-  const startScanning = async () => {
-    setScanning(true);
+  // Processar a foto tirada do código de barras
+  const handleImageCapture = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsLoading(true);
     setScanError('');
 
+    const imageUrl = URL.createObjectURL(file);
+    const codeReader = new BrowserBarcodeReader();
+
     try {
-      // 1. Pega o fluxo de vídeo da câmera do dispositivo (funciona perfeitamente em mobile e desktop)
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
-      });
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-
-      // 2. Inicializa o leitor do ZXing apontando para o elemento de vídeo ativo
-      codeReaderRef.current = new BrowserBarcodeReader();
+      // Tenta decodificar o código de barras direto da imagem capturada
+      const result = await codeReader.decodeFromImageUrl(imageUrl);
       
-      // Dá um breve tempo para o vídeo renderizar e começa a decodificação contínua
-      setTimeout(() => {
-        if (videoRef.current && scanning) {
-          codeReaderRef.current.decodeFromVideoElement(videoRef.current, (result, err) => {
-            if (result) {
-              const isbn = result.getText();
-              if (isbn && isbn.length >= 10 ) {
-                stopScanning();
-                handleIsbnDetected(isbn);
-              }
-            }
-          });
+      if (result) {
+        const isbn = result.getText();
+        const book = await searchBookByIsbnOrQuery(isbn);
+        
+        if (book) {
+          setDetectedBooks((prev) => [...prev, book]);
+        } else {
+          alert(`Livro com código ${isbn} não encontrado.`);
         }
-      }, 500);
-
+      }
     } catch (err) {
-      console.error('Erro ao acessar a câmera:', err);
-      setScanError('Não foi possível acessar a câmera. Verifique se o navegador tem permissão.');
-      setScanning(false);
+      console.error('Erro ao ler o código de barras da foto:', err);
+      setScanError('Não foi possível identificar o código de barras na foto. Tente aproximar mais ou use a busca por texto abaixo.');
+    } finally {
+      setIsLoading(false);
+      // Limpa o input para permitir enviar a mesma foto se necessário
+      e.target.value = '';
     }
-  };
-
-  const handleIsbnDetected = async (isbn) => {
-    setIsLoading(true);
-    const book = await searchBookByIsbnOrQuery(isbn);
-    if (book) {
-      setDetectedBooks((prev) => [...prev, book]);
-    } else {
-      alert(`Livro com código ${isbn} não encontrado na base.`);
-    }
-    setIsLoading(false);
-  };
-
-  const stopScanning = () => {
-    // Para todas as trilhas de vídeo da câmera (apaga a luzinha vermelha/verde)
-    if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = videoRef.current.srcObject.getTracks();
-      tracks.forEach((track) => track.stop());
-      videoRef.current.srcObject = null;
-    }
-    if (codeReaderRef.current) {
-      codeReaderRef.current.reset();
-    }
-    setScanning(false);
   };
 
   const handleManualSearch = async (e) => {
@@ -113,39 +82,40 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
 
   return (
     <div className="scanner-container">
-      <h3>📷 Leitor de Livros por Código de Barras</h3>
+      <h3>📷 Leitor de Livros por Foto ou Busca</h3>
       <p className="scanner-subtitle">
-        Aponte a câmera para o código de barras (ISBN) ou busque pelo nome para puxar a capa oficial.
+        Tire uma foto do código de barras (ISBN) na contracapa do livro ou busque pelo nome para puxar os dados.
       </p>
 
+      {/* Botão de Captura por Foto / Câmera Nativa */}
       <div className="camera-box">
-        {scanning ? (
-          <div className="video-wrapper">
-            <video 
-              ref={videoRef} 
-              className="scanner-video" 
-              autoPlay 
-              playsInline 
-              muted 
-            />
-            <button className="btn-secondary btn-stop" onClick={stopScanning}>
-              Parar Câmera ✕
-            </button>
-          </div>
-        ) : (
-          <button className="btn-primary btn-start-cam" onClick={startScanning}>
-            📸 Ler Código de Barras (Câmera)
-          </button>
-        )}
-        {scanError && <p className="error-message">{scanError}</p>}
+        <input 
+          type="file" 
+          accept="image/*" 
+          capture="environment" 
+          ref={fileInputRef} 
+          style={{ display: 'none' }} 
+          onChange={handleImageCapture}
+        />
+        
+        <button 
+          className="btn-primary btn-start-cam" 
+          onClick={() => fileInputRef.current.click()}
+          disabled={isLoading}
+        >
+          {isLoading ? 'Processando imagem...' : '📸 Tirar Foto do Código de Barras'}
+        </button>
+
+        {scanError && <p className="error-message" style={{ color: '#e11d48', fontSize: '0.85rem', marginTop: '0.5rem' }}>{scanError}</p>}
       </div>
 
+      {/* Busca Manual por Título / ISBN */}
       <form className="manual-form" onSubmit={handleManualSearch}>
         <h4>🔍 Ou busque pelo Título / ISBN</h4>
         <div className="search-input-wrapper">
           <input 
             type="text" 
-            placeholder="Ex: O Pequeno Príncipe ou 978..." 
+            placeholder="Ex: Esquecidos de Domingo ou 978..." 
             value={searchQuery} 
             onChange={(e) => setSearchQuery(e.target.value)} 
           />
@@ -155,6 +125,7 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
         </div>
       </form>
 
+      {/* Lista de Livros Selecionados com Capas */}
       <div className="detected-section">
         <div className="detected-header">
           <h4>Sua Lista de Livros ({detectedBooks.length})</h4>
@@ -162,7 +133,7 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
         </div>
 
         {detectedBooks.length === 0 ? (
-          <p className="empty-list-text">Nenhum livro adicionado ainda. Use a câmera ou a busca acima!</p>
+          <p className="empty-list-text">Nenhum livro adicionado ainda. Tire uma foto ou use a busca acima!</p>
         ) : (
           <ul className="books-list">
             {detectedBooks.map((book) => (
