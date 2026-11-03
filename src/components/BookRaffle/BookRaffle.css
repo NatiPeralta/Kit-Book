@@ -1,0 +1,87 @@
+.raffle-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.raffle-subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.routable-box {
+  background: #f1f2f6;
+  border: 2px dashed #cbd5e1;
+  border-radius: var(--border-radius);
+  padding: 2rem 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.routable-box.rolling {
+  border-color: var(--primary);
+  background: #ede9fe;
+  transform: scale(1.02);
+}
+
+.routable-box.success {
+  border-style: solid;
+  border-color: #10b981;
+  background: #ecfdf5;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.routable-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.routable-title {
+  font-size: 1.4rem;
+  color: var(--text-main);
+  font-weight: 700;
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.winner-details {
+  font-size: 0.9rem;
+  color: #047857;
+  margin-top: 0.25rem;
+}
+
+.btn-raffle {
+  font-size: 1.05rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.25);
+}
+
+.btn-raffle:hover:not(:disabled) {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+.btn-raffle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.raffle-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.raffle-actions button {
+  flex: 1;
+}
