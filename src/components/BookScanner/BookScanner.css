@@ -1,0 +1,226 @@
+.scanner-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.scanner-subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.upload-box {
+  border: 2px dashed var(--primary);
+  border-radius: var(--border-radius);
+  background: #f4f3ff;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.upload-box:hover {
+  background: #ede9fe;
+}
+
+.file-input {
+  display: none;
+}
+
+.upload-label {
+  display: block;
+  cursor: pointer;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.upload-icon {
+  font-size: 2rem;
+}
+
+.image-preview-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.preview-img {
+  max-height: 180px;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.change-img-text {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.processing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.spinner {
+  font-size: 1.2rem;
+  animation: bounce 0.8s infinite alternate;
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-4px); }
+}
+
+.manual-form {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.manual-form h4 {
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.manual-inputs {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.manual-inputs input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.btn-add-manual {
+  padding: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.detected-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.detected-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.unread-badge {
+  font-size: 0.8rem;
+  background: #e0e7ff;
+  color: var(--primary);
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.empty-list-text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 1rem;
+}
+
+.books-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.book-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.book-item.selected {
+  border-color: var(--primary);
+  background: #faf5ff;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+.checkbox-wrapper input {
+  accent-color: var(--primary);
+  width: 16px;
+  height: 16px;
+}
+
+.book-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.book-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.book-author {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.btn-remove {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.2rem 0.4rem;
+}
+
+.btn-remove:hover {
+  color: #ef4444;
+}
+
+.scanner-actions {
+  margin-top: 0.5rem;
+}
+
+.scanner-actions button {
+  width: 100%;
+}

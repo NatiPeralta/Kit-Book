@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import BookScanner from './components/BookScanner/BookScanner';
 import BookRaffle from './components/BookRaffle/BookRaffle';
 import ScheduleBuilder from './components/ScheduleBuilder/ScheduleBuilder';
 import './App.css';
 
 export default function App() {
-  const [step, setStep] = useState(2); // Começamos no passo 2 para testes da roleta
+  const [step, setStep] = useState(1); // Iniciando no Passo 1!
   const [booksList, setBooksList] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
 
@@ -25,11 +26,10 @@ export default function App() {
       <main className="app-content">
         {step === 1 && (
           <section className="step-card">
-            <h2>Passo 1: Seus Livros</h2>
-            <p>Tire foto da estante ou selecione os livros não lidos.</p>
-            <button className="btn-primary" onClick={() => setStep(2)}>
-              Ir para o Sorteio →
-            </button>
+            <BookScanner 
+              onConfirmBooks={(books) => setBooksList(books)}
+              onNext={() => setStep(2)}
+            />
           </section>
         )}
 
