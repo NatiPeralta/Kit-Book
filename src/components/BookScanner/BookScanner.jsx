@@ -13,40 +13,62 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
   const videoRef = useRef(null);
   const codeReaderRef = useRef(null);
 
+  // Iniciar a câmera manualmente e depois aplicar o leitor de código de barras
   const startScanning = async () => {
     setScanning(true);
     setScanError('');
-    codeReaderRef.current = new BrowserBarcodeReader();
 
     try {
-      // Inicia a leitura diretamente pelo elemento de vídeo sem precisar listar dispositivos manualmente
-      codeReaderRef.current.decodeFromVideoDevice(
-        undefined, // Passar undefined faz o ZXing escolher a câmera padrão automaticamente
-        videoRef.current,
-        async (result, err) => {
-          if (result) {
-            const isbn = result.getText();
-            stopScanning();
-            setIsLoading(true);
-            
-            const book = await searchBookByIsbnOrQuery(isbn);
-            if (book) {
-              setDetectedBooks((prev) => [...prev, book]);
-            } else {
-              alert(`Livro com ISBN ${isbn} não encontrado na base.`);
+      // 1. Pega o fluxo de vídeo da câmera do dispositivo (funciona perfeitamente em mobile e desktop)
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      });
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+
+      // 2. Inicializa o leitor do ZXing apontando para o elemento de vídeo ativo
+      codeReaderRef.current = new BrowserBarcodeReader();
+      
+      // Dá um breve tempo para o vídeo renderizar e começa a decodificação contínua
+      setTimeout(() => {
+        if (videoRef.current && scanning) {
+          codeReaderRef.current.decodeFromVideoElement(videoRef.current, (result, err) => {
+            if (result) {
+              const isbn = result.getText();
+              stopScanning();
+              handleIsbnDetected(isbn);
             }
-            setIsLoading(false);
-          }
+          });
         }
-      );
+      }, 500);
+
     } catch (err) {
-      console.error('Erro ao iniciar o scanner:', err);
-      setScanError('Não foi possível iniciar o leitor de código de barras. Verifique as permissões.');
+      console.error('Erro ao acessar a câmera:', err);
+      setScanError('Não foi possível acessar a câmera. Verifique se o navegador tem permissão.');
       setScanning(false);
     }
   };
 
+  const handleIsbnDetected = async (isbn) => {
+    setIsLoading(true);
+    const book = await searchBookByIsbnOrQuery(isbn);
+    if (book) {
+      setDetectedBooks((prev) => [...prev, book]);
+    } else {
+      alert(`Livro com código ${isbn} não encontrado na base.`);
+    }
+    setIsLoading(false);
+  };
+
   const stopScanning = () => {
+    // Para todas as trilhas de vídeo da câmera (apaga a luzinha vermelha/verde)
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
+    }
     if (codeReaderRef.current) {
       codeReaderRef.current.reset();
     }
@@ -97,7 +119,13 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
       <div className="camera-box">
         {scanning ? (
           <div className="video-wrapper">
-            <video ref={videoRef} className="scanner-video" autoPlay playsInline muted />
+            <video 
+              ref={videoRef} 
+              className="scanner-video" 
+              autoPlay 
+              playsInline 
+              muted 
+            />
             <button className="btn-secondary btn-stop" onClick={stopScanning}>
               Parar Câmera ✕
             </button>
