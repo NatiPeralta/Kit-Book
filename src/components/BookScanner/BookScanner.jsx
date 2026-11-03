@@ -1,70 +1,95 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { BrowserBarcodeReader } from '@zxing/library';
+import { searchBookByIsbnOrQuery } from '../../services/googleBooks';
 import './BookScanner.css';
 
 export default function BookScanner({ onConfirmBooks, onNext }) {
-  const [imagePreview, setImagePreview] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [manualTitle, setManualTitle] = useState('');
-  const [manualAuthor, setManualAuthor] = useState('');
-  const [manualPages, setManualPages] = useState('');
-  
-  // Lista inicial de livros
   const [detectedBooks, setDetectedBooks] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [scanError, setScanError] = useState('');
 
-  // Simulador de Leitura de Foto (OCR)
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const videoRef = useRef(null);
+  const codeReaderRef = useRef(null);
 
-    setImagePreview(URL.createObjectURL(file));
-    setIsProcessing(true);
+  // Iniciar a câmera para ler o código de barras (ISBN)
+  const startScanning = async () => {
+    setScanning(true);
+    setScanError('');
+    codeReaderRef.current = new BrowserBarcodeReader();
 
-    // Simula a leitura das lombadas com OCR
-    setTimeout(() => {
-      const scannedBooks = [
-        { id: Date.now() + 1, title: 'O Povo do Ar', author: 'Holly Black', pages: 368, unread: true },
-        { id: Date.now() + 2, title: 'Teto Para Dois', author: 'Beth O’Leary', pages: 400, unread: true },
-        { id: Date.now() + 3, title: 'Os Sete Maridos de Evelyn Hugo', author: 'Taylor Jenkins Reid', pages: 360, unread: true },
-      ];
-      setDetectedBooks((prev) => [...prev, ...scannedBooks]);
-      setIsProcessing(false);
-    }, 1500);
+    try {
+      const videoInputDevices = await BrowserBarcodeReader.listVideoInputDevices();
+      const selectedDeviceId = videoInputDevices[0]?.deviceId;
+
+      if (!selectedDeviceId) {
+        setScanError('Nenhuma câmera encontrada no dispositivo.');
+        setScanning(false);
+        return;
+      }
+
+      codeReaderRef.current.decodeFromVideoDevice(
+        selectedDeviceId,
+        videoRef.current,
+        async (result, err) => {
+          if (result) {
+            const isbn = result.getText();
+            stopScanning();
+            setIsLoading(true);
+            
+            // Busca o livro na API do Google Books usando o ISBN lido
+            const book = await searchBookByIsbnOrQuery(isbn);
+            if (book) {
+              setDetectedBooks((prev) => [...prev, book]);
+            } else {
+              alert(`Livro com ISBN ${isbn} não encontrado na base.`);
+            }
+            setIsLoading(false);
+          }
+        }
+      );
+    } catch (err) {
+      console.error(err);
+      setScanError('Erro ao acessar a câmera.');
+      setScanning(false);
+    }
   };
 
-  // Adicionar livro manualmente
-  const handleAddManualBook = (e) => {
+  const stopScanning = () => {
+    if (codeReaderRef.current) {
+      codeReaderRef.current.reset();
+    }
+    setScanning(false);
+  };
+
+  // Buscar livro manualmente por texto e adicionar com capa da API
+  const handleManualSearch = async (e) => {
     e.preventDefault();
-    if (!manualTitle.trim()) return;
+    if (!searchQuery.trim()) return;
 
-    const newBook = {
-      id: Date.now(),
-      title: manualTitle.trim(),
-      author: manualAuthor.trim() || 'Autor não informado',
-      pages: Number(manualPages) || 300,
-      unread: true
-    };
-
-    setDetectedBooks((prev) => [...prev, newBook]);
-    setManualTitle('');
-    setManualAuthor('');
-    setManualPages('');
+    setIsLoading(true);
+    const book = await searchBookByIsbnOrQuery(searchQuery);
+    
+    if (book) {
+      setDetectedBooks((prev) => [...prev, book]);
+      setSearchQuery('');
+    } else {
+      alert('Nenhum livro encontrado com esse nome.');
+    }
+    setIsLoading(false);
   };
 
-  // Alternar o status de não lido (checkbox)
   const toggleUnread = (id) => {
     setDetectedBooks((prev) =>
-      prev.map((book) =>
-        book.id === id ? { ...book, unread: !book.unread } : book
-      )
+      prev.map((book) => (book.id === id ? { ...book, unread: !book.unread } : book))
     );
   };
 
-  // Remover livro da lista
   const handleRemoveBook = (id) => {
     setDetectedBooks((prev) => prev.filter((book) => book.id !== id));
   };
 
-  // Avançar para a tela de sorteio passando apenas os não lidos
   const handleProceedToRaffle = () => {
     const unreadBooks = detectedBooks.filter((book) => book.unread);
     onConfirmBooks(unreadBooks);
@@ -75,81 +100,53 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
 
   return (
     <div className="scanner-container">
-      <h3>📷 Estante ou E-reader</h3>
+      <h3>📷 Leitor de Livros por Código de Barras</h3>
       <p className="scanner-subtitle">
-        Tire uma foto da sua estante para identificar as lombadas ou adicione seus livros manualmente.
+        Aponte a câmera para o código de barras (ISBN) do livro ou busque pelo nome para puxar a capa oficial.
       </p>
 
-      {/* Área de Upload / Câmera */}
-      <div className="upload-box">
-        <input 
-          type="file" 
-          accept="image/*" 
-          id="camera-input" 
-          onChange={handleImageUpload} 
-          className="file-input"
-        />
-        <label htmlFor="camera-input" className="upload-label">
-          {imagePreview ? (
-            <div className="image-preview-wrapper">
-              <img src={imagePreview} alt="Sua Estante" className="preview-img" />
-              <span className="change-img-text">Trocar foto 📷</span>
-            </div>
-          ) : (
-            <div className="upload-placeholder">
-              <span className="upload-icon">📸</span>
-              <span>Clique para tirar foto ou carregar a estante</span>
-            </div>
-          )}
-        </label>
+      {/* Seção da Câmera / Scanner */}
+      <div className="camera-box">
+        {scanning ? (
+          <div className="video-wrapper">
+            <video ref={videoRef} className="scanner-video" />
+            <button className="btn-secondary btn-stop" onClick={stopScanning}>
+              Parar Câmera ✕
+            </button>
+          </div>
+        ) : (
+          <button className="btn-primary btn-start-cam" onClick={startScanning}>
+            📸 Ler Código de Barras (Câmera)
+          </button>
+        )}
+        {scanError && <p className="error-message">{scanError}</p>}
       </div>
 
-      {isProcessing && (
-        <div className="processing-indicator">
-          <span className="spinner">🐾</span>
-          <p>Lendo lombadas dos livros com visão felina...</p>
-        </div>
-      )}
-
-      {/* Formulário Manual */}
-      <form className="manual-form" onSubmit={handleAddManualBook}>
-        <h4>+ Adicionar Livro Manualmente</h4>
-        <div className="manual-inputs">
+      {/* Busca Manual por Título / Autor / ISBN */}
+      <form className="manual-form" onSubmit={handleManualSearch}>
+        <h4>🔍 Ou busque pelo Título / ISBN</h4>
+        <div className="search-input-wrapper">
           <input 
             type="text" 
-            placeholder="Título do livro *" 
-            value={manualTitle} 
-            onChange={(e) => setManualTitle(e.target.value)} 
-            required 
+            placeholder="Ex: O Pequeno Príncipe ou 978..." 
+            value={searchQuery} 
+            onChange={(e) => setSearchQuery(e.target.value)} 
           />
-          <input 
-            type="text" 
-            placeholder="Autor(a)" 
-            value={manualAuthor} 
-            onChange={(e) => setManualAuthor(e.target.value)} 
-          />
-          <input 
-            type="number" 
-            placeholder="Páginas" 
-            value={manualPages} 
-            onChange={(e) => setManualPages(e.target.value)} 
-            min="1"
-          />
+          <button type="submit" className="btn-secondary" disabled={isLoading}>
+            {isLoading ? 'Buscando...' : 'Buscar'}
+          </button>
         </div>
-        <button type="submit" className="btn-secondary btn-add-manual">
-          Adicionar à Lista
-        </button>
       </form>
 
-      {/* Lista de Livros Identificados */}
+      {/* Lista de Livros Selecionados com Capas */}
       <div className="detected-section">
         <div className="detected-header">
-          <h4>Seus Livros ({detectedBooks.length})</h4>
+          <h4>Sua Lista de Livros ({detectedBooks.length})</h4>
           <span className="unread-badge">{unreadCount} prontos para sorteio</span>
         </div>
 
         {detectedBooks.length === 0 ? (
-          <p className="empty-list-text">Nenhum livro adicionado ainda. Tire uma foto ou digite acima!</p>
+          <p className="empty-list-text">Nenhum livro adicionado ainda. Use a câmera ou a busca acima!</p>
         ) : (
           <ul className="books-list">
             {detectedBooks.map((book) => (
@@ -160,6 +157,7 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
                     checked={book.unread} 
                     onChange={() => toggleUnread(book.id)} 
                   />
+                  {book.thumbnail && <img src={book.thumbnail} alt={book.title} className="book-thumb" />}
                   <div className="book-info">
                     <span className="book-title">{book.title}</span>
                     <span className="book-author">{book.author} • {book.pages} págs</span>
