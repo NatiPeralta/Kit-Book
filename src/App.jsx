@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import BookRaffle from './components/BookRaffle/BookRaffle';
+import ScheduleBuilder from './components/ScheduleBuilder/ScheduleBuilder';
 import './App.css';
 
 export default function App() {
-  const [step, setStep] = useState(2); // Começaremos testando direto no passo 2 para ver a roleta!
+  const [step, setStep] = useState(2); // Começamos no passo 2 para testes da roleta
   const [booksList, setBooksList] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
 
@@ -14,7 +15,7 @@ export default function App() {
         <p>Sua estante física e digital organizada com charme felino</p>
       </header>
 
-      {/* Indicador de Passos Simples */}
+      {/* Indicador de Passos */}
       <div className="steps-indicator">
         <span className={step === 1 ? 'active' : ''}>1. Livros</span>
         <span className={step === 2 ? 'active' : ''}>2. Sorteio</span>
@@ -45,11 +46,10 @@ export default function App() {
 
         {step === 3 && (
           <section className="step-card">
-            <h2>Passo 3: Seu Cronograma</h2>
-            <p>Livro escolhido: <strong>{selectedBook ? selectedBook.title : 'Nenhum'}</strong></p>
-            <button className="btn-secondary" onClick={() => setStep(2)}>
-              ← Voltar ao Sorteio
-            </button>
+            <ScheduleBuilder 
+              book={selectedBook}
+              onBack={() => setStep(2)}
+            />
           </section>
         )}
       </main>
