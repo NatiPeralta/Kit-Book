@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { BrowserBarcodeReader } from '@zxing/library';
-import { searchBookByIsbnOrQuery } from '../../services/googleBooks';
+import { searchBookByIsbnOrQuery } from '../../services/bookService';
 import './BookScanner.css';
 
 export default function BookScanner({ onConfirmBooks, onNext }) {
@@ -37,8 +37,10 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
           codeReaderRef.current.decodeFromVideoElement(videoRef.current, (result, err) => {
             if (result) {
               const isbn = result.getText();
-              stopScanning();
-              handleIsbnDetected(isbn);
+              if (isbn && isbn.length >= 10 ) {
+                stopScanning();
+                handleIsbnDetected(isbn);
+              }
             }
           });
         }
