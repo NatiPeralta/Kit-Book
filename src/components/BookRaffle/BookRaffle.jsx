@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './BookRaffle.css';
 
 export default function BookRaffle({ books, onSelectBook, onBack, onNext }) {
@@ -13,14 +13,33 @@ export default function BookRaffle({ books, onSelectBook, onBack, onNext }) {
   const bookList = books && books.length > 0 ? books : mockBooks;
 
   const [isRolling, setIsRolling] = useState(false);
-  const [winnerBook, setWinnerBook] = useState(null);
-  const [displayTitle, setDisplayTitle] = useState('Clique no botão para sortear!');
+
+  // Recupera o livro sorteado salvo anteriormente no localStorage (se houver)
+  const [winnerBook, setWinnerBook] = useState(() => {
+    const savedWinner = localStorage.getItem('kitbook_winner_book');
+    return savedWinner ? JSON.parse(savedWinner) : null;
+  });
+
+
+  const [displayTitle, setDisplayTitle] = useState(() => {
+    const savedWinner = localStorage.getItem('kitbook_winner_book');
+    const parsed = savedWinner ? JSON.parse(savedWinner) : null;
+    return parsed ? parsed.title : 'Clique no botão para sortear!';
+  });
+
+  // Salva o livro sorteado no localStorage quando escolhido
+  useEffect(() => {
+    if (winnerBook) {
+      localStorage.setItem('kitbook_winner_book', JSON.stringify(winnerBook));
+    }
+  }, [winnerBook]);
 
   const handleRaffle = () => {
     if (bookList.length === 0) return;
 
     setIsRolling(true);
     setWinnerBook(null);
+    localStorage.removeItem('kitbook_winner_book');
 
     let counter = 0;
     const maxRolls = 20; // Quantas vezes o nome vai trocar antes de parar
@@ -35,10 +54,17 @@ export default function BookRaffle({ books, onSelectBook, onBack, onNext }) {
         clearInterval(interval);
         // Sorteio final oficial
         const finalWinner = bookList[Math.floor(Math.random() * bookList.length)];
-        setWinnerBook(finalWinner);
-        setDisplayTitle(finalWinner.title);
+
+        // Garante que as páginas retornem o valor atualizado pós edição do usuário
+        const winnerWithPages = {
+          ...finalWinner,
+          pages: Number(finalWinner.pages) || 300
+        }
+
+        setWinnerBook(winnerWithPages);
+        setDisplayTitle(winnerWithPages.title);
         setIsRolling(false);
-        onSelectBook(finalWinner); // Passa o livro escolhido para o componente pai (App)
+        onSelectBook(winnerWithPages); // Passa o livro correto para o componente pai
       }
     }, speed);
   };

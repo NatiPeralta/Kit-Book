@@ -1,33 +1,48 @@
+/* =========================================
+   Estilos Globais e Fundo Personalizado
+   ========================================= */
 :root {
-  --primary: #6c5ce7;
-  --primary-hover: #5b4bc4;
-  --accent: #fd79a8;
-  --bg-color: #f8f9fa;
-  --card-bg: #ffffff;
-  --text-main: #2d3436;
-  --text-muted: #636e72;
-  --border-radius: 12px;
-  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+  --content-bg: #ffffff;
+  --primary-color: #ff4785;
+  --secondary-color: #ff85b3;
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+  --border-radius: 16px;
 }
 
 * {
-  box-sizing: border-box;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-  font-family: var(--font-main);
-  background-color: var(--bg-color);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  /* Aplica a imagem de fundo que você enviou */
+  background-image: url('./assets/background-image.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   color: var(--text-main);
+  min-height: 100vh;
   display: flex;
   justify-content: center;
-  min-height: 100vh;
+  align-items: center;
+  padding: 20px;
 }
 
+/* Container central flutuante estilo card */
 #root {
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 1.5rem;
+  max-width: 650px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border-radius: var(--border-radius);
+  border: 2px solid #ffd1e3;
+  box-shadow: 0 15px 35px rgba(255, 71, 133, 0.15);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }

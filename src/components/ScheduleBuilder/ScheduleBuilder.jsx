@@ -3,12 +3,15 @@ import { generateSchedule } from '../../utils/scheduleCalculator';
 import './ScheduleBuilder.css';
 
 export default function ScheduleBuilder({ book, onBack }) {
-  // Dados padrão caso nenhum livro tenha sido passado diretamente
-  const targetBook = book || { title: 'Até o Verão Terminar', pages: 320 };
+  // Tenta pegar o livro passado por prop, se não houver, busca do localStorage (salvo no sorteio)
+  const savedWinner = localStorage.getItem('kitbook_winner_book');
+  const fallbackBook = savedWinner ? JSON.parse(savedWinner) : { title: 'Até o Verão Terminar', pages: 320 };
 
-  // Estados do formulário
+  const targetBook = book || fallbackBook;
+
+  // Estados do formulário sincronizados com as páginas reais do livro escolhido
   const [unitType, setUnitType] = useState('páginas'); // 'páginas', 'capítulos', '%'
-  const [totalUnits, setTotalUnits] = useState(targetBook.pages || 300);
+  const [totalUnits, setTotalUnits] = useState(targetBook.pages ? Number(targetBook.pages) : 300);
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState('');
   const [readOnWeekends, setReadOnWeekends] = useState(true);
@@ -107,10 +110,10 @@ export default function ScheduleBuilder({ book, onBack }) {
 
           <div className="schedule-actions">
             <button type="button" className="btn-secondary" onClick={onBack}>
-              ← Voltar ao Sorteio
+              ← Voltar
             </button>
             <button type="submit" className="btn-primary">
-              Gerar Cronograma 🐾
+              Gerar Cronograma
             </button>
           </div>
         </form>

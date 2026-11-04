@@ -1,10 +1,20 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { BrowserBarcodeReader } from '@zxing/library';
 import { searchBookByIsbnOrQuery } from '../../services/googleBooks';
 import './BookScanner.css';
 
 export default function BookScanner({ onConfirmBooks, onNext }) {
-  const [detectedBooks, setDetectedBooks] = useState([]);
+  const [detectedBooks, setDetectedBooks] = useState(() => {
+    const saved = localStorage.getItem('kitbook_saved_books');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  //Salva no localStorage sempre que a lista de livros mudar
+  useEffect(() => {
+    localStorage.setItem('kitbook_saved_books', JSON.stringify(detectedBooks));
+  }, [detectedBooks]);
+
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [scanError, setScanError] = useState('');
@@ -86,6 +96,7 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
     if (window.confirm('Tem certeza de que deseja remover todos os livros da lista?')) {
       setDetectedBooks([]);
       setEditingId(null);
+      localStorage.removeItem('kitbook_saved_books');
     }
   };
 

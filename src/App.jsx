@@ -2,6 +2,7 @@ import { useState } from 'react';
 import BookScanner from './components/BookScanner/BookScanner';
 import BookRaffle from './components/BookRaffle/BookRaffle';
 import ScheduleBuilder from './components/ScheduleBuilder/ScheduleBuilder';
+import Header from "./components/Header/Header"
 import './App.css';
 
 export default function App() {
@@ -11,10 +12,7 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <header className="app-header">
-        <h1>🐱 KitBook</h1>
-        <p>Sua estante física e digital organizada com charme felino</p>
-      </header>
+      <Header />
 
       {/* Indicador de Passos */}
       <div className="steps-indicator">
