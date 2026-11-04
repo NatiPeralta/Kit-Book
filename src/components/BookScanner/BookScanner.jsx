@@ -8,10 +8,14 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [scanError, setScanError] = useState('');
+  
+  // Estado para controlar qual livro está sendo editado no momento
+  const [editingId, setEditingId] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editPages, setEditPages] = useState('');
 
   const fileInputRef = useRef(null);
 
-  // Processar a foto tirada do código de barras
   const handleImageCapture = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -23,25 +27,19 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
     const codeReader = new BrowserBarcodeReader();
 
     try {
-      // Tenta decodificar o código de barras direto da imagem capturada
       const result = await codeReader.decodeFromImageUrl(imageUrl);
-      
       if (result) {
         const isbn = result.getText();
         const book = await searchBookByIsbnOrQuery(isbn);
-        
         if (book) {
           setDetectedBooks((prev) => [...prev, book]);
-        } else {
-          alert(`Livro com código ${isbn} não encontrado.`);
         }
       }
     } catch (err) {
-      console.error('Erro ao ler o código de barras da foto:', err);
-      setScanError('Não foi possível identificar o código de barras na foto. Tente aproximar mais ou use a busca por texto abaixo.');
+      console.error('Erro ao ler o código:', err);
+      setScanError('Não foi possível ler o código de barras. Use a busca por texto abaixo.');
     } finally {
       setIsLoading(false);
-      // Limpa o input para permitir enviar a mesma foto se necessário
       e.target.value = '';
     }
   };
@@ -57,7 +55,7 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
       setDetectedBooks((prev) => [...prev, book]);
       setSearchQuery('');
     } else {
-      alert('Nenhum livro encontrado com esse nome.');
+      alert('Nenhum livro encontrado.');
     }
     setIsLoading(false);
   };
@@ -72,6 +70,25 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
     setDetectedBooks((prev) => prev.filter((book) => book.id !== id));
   };
 
+  // Iniciar a edição de um livro
+  const startEditing = (book) => {
+    setEditingId(book.id);
+    setEditTitle(book.title);
+    setEditPages(book.pages);
+  };
+
+  // Salvar a edição do livro
+  const saveEditing = (id) => {
+    setDetectedBooks((prev) =>
+      prev.map((book) =>
+        book.id === id
+          ? { ...book, title: editTitle, pages: parseInt(editPages) || book.pages }
+          : book
+      )
+    );
+    setEditingId(null);
+  };
+
   const handleProceedToRaffle = () => {
     const unreadBooks = detectedBooks.filter((book) => book.unread);
     onConfirmBooks(unreadBooks);
@@ -84,10 +101,9 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
     <div className="scanner-container">
       <h3>📷 Leitor de Livros por Foto ou Busca</h3>
       <p className="scanner-subtitle">
-        Tire uma foto do código de barras (ISBN) na contracapa do livro ou busque pelo nome para puxar os dados.
+        Tire a foto do código de barras ou busque pelo título. Você também pode ajustar as páginas se necessário!
       </p>
 
-      {/* Botão de Captura por Foto / Câmera Nativa */}
       <div className="camera-box">
         <input 
           type="file" 
@@ -97,25 +113,22 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
           style={{ display: 'none' }} 
           onChange={handleImageCapture}
         />
-        
         <button 
           className="btn-primary btn-start-cam" 
           onClick={() => fileInputRef.current.click()}
           disabled={isLoading}
         >
-          {isLoading ? 'Processando imagem...' : '📸 Tirar Foto do Código de Barras'}
+          {isLoading ? 'Processando...' : '📸 Tirar Foto do Código de Barras'}
         </button>
-
         {scanError && <p className="error-message" style={{ color: '#e11d48', fontSize: '0.85rem', marginTop: '0.5rem' }}>{scanError}</p>}
       </div>
 
-      {/* Busca Manual por Título / ISBN */}
       <form className="manual-form" onSubmit={handleManualSearch}>
         <h4>🔍 Ou busque pelo Título / ISBN</h4>
         <div className="search-input-wrapper">
           <input 
             type="text" 
-            placeholder="Ex: Esquecidos de Domingo ou 978..." 
+            placeholder="Ex: Leitura de Verão" 
             value={searchQuery} 
             onChange={(e) => setSearchQuery(e.target.value)} 
           />
@@ -125,7 +138,6 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
         </div>
       </form>
 
-      {/* Lista de Livros Selecionados com Capas */}
       <div className="detected-section">
         <div className="detected-header">
           <h4>Sua Lista de Livros ({detectedBooks.length})</h4>
@@ -133,7 +145,7 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
         </div>
 
         {detectedBooks.length === 0 ? (
-          <p className="empty-list-text">Nenhum livro adicionado ainda. Tire uma foto ou use a busca acima!</p>
+          <p className="empty-list-text">Nenhum livro adicionado ainda.</p>
         ) : (
           <ul className="books-list">
             {detectedBooks.map((book) => (
@@ -145,11 +157,35 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
                     onChange={() => toggleUnread(book.id)} 
                   />
                   {book.thumbnail && <img src={book.thumbnail} alt={book.title} className="book-thumb" />}
-                  <div className="book-info">
-                    <span className="book-title">{book.title}</span>
-                    <span className="book-author">{book.author} • {book.pages} págs</span>
-                  </div>
+                  
+                  {/* Se estiver editando este livro, mostra inputs para corrigir */}
+                  {editingId === book.id ? (
+                    <div className="edit-inline-container" onClick={(e) => e.preventDefault()}>
+                      <input 
+                        type="text" 
+                        value={editTitle} 
+                        onChange={(e) => setEditTitle(e.target.value)} 
+                        className="input-edit-title"
+                      />
+                      <div className="edit-pages-row">
+                        <input 
+                          type="number" 
+                          value={editPages} 
+                          onChange={(e) => setEditPages(e.target.value)} 
+                          className="input-edit-pages"
+                        />
+                        <span>págs</span>
+                        <button className="btn-save-edit" onClick={() => saveEditing(book.id)}>Salvar</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="book-info" onClick={() => startEditing(book)}>
+                      <span className="book-title">{book.title} ✏️</span>
+                      <span className="book-author">{book.author} • <strong>{book.pages} págs</strong> (clique para editar)</span>
+                    </div>
+                  )}
                 </label>
+                
                 <button className="btn-remove" onClick={() => handleRemoveBook(book.id)}>
                   ✕
                 </button>
