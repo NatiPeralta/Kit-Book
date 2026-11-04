@@ -24,8 +24,17 @@
   gap: 8px;
 }
 
+.step-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .step-item:hover {
   color: #ff4785;
+}
+
+.step-item.disabled:hover {
+  color: #6b7280; /* Mantém a cor neutra no hover se estiver bloqueado */
 }
 
 .step-item.active {

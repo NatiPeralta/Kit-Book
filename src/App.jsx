@@ -11,12 +11,17 @@ export default function App() {
   const [booksList, setBooksList] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
 
+  // Calcula se há livros marcados como "prontos para sorteio" (unread)
+  // Ou você pode usar booksList.length > 0 caso queira liberar com qualquer livro na lista
+  const unreadCount = booksList.filter((b) => b.unread).length;
+  const canProceed = unreadCount > 0;
+
   return (
     <div className="app-container">
       <Header />
 
       {/* Indicador de Passos */}
-      <StepNavigation currentStep={step} setStep={setStep}/>
+      <StepNavigation currentStep={step} setStep={setStep} canProceed={canProceed}/>
 
       <main className="app-content">
         {step === 1 && (
