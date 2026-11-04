@@ -121,6 +121,12 @@
   font-size: 0.85rem;
 }
 
+.error-message {
+  color: #e11d48;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
 .detected-section {
   display: flex;
   flex-direction: column;
@@ -133,6 +139,12 @@
   align-items: center;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .unread-badge {
   font-size: 0.8rem;
   background: #e0e7ff;
@@ -140,6 +152,22 @@
   padding: 0.25rem 0.6rem;
   border-radius: 12px;
   font-weight: 600;
+}
+
+.btn-remove-all {
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-remove-all:hover {
+  background: #fecaca;
 }
 
 .empty-list-text {
@@ -154,17 +182,17 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-height: 220px;
+  max-height: 260px;
   overflow-y: auto;
 }
 
+/* Item da lista adaptável para edição em bloco */
 .book-item {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   background: #fff;
   border: 1px solid #e2e8f0;
-  padding: 0.6rem 0.8rem;
+  padding: 0.75rem;
   border-radius: 8px;
   transition: all 0.2s;
 }
@@ -174,12 +202,19 @@
   background: #faf5ff;
 }
 
+.book-item-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  position: relative;
+}
+
 .checkbox-wrapper {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   cursor: pointer;
-  flex: 1;
 }
 
 .checkbox-wrapper input {
@@ -188,9 +223,21 @@
   height: 16px;
 }
 
+.book-thumb {
+  width: 42px;
+  height: 58px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 .book-info {
+  flex: 1;
+  margin-left: 10px;
+  cursor: pointer;
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .book-title {
@@ -202,6 +249,64 @@
 .book-author {
   font-size: 0.78rem;
   color: var(--text-muted);
+}
+
+/* Estilos do Bloco de Edição Inline */
+.edit-block-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-left: 10px;
+  margin-right: 15px;
+}
+
+.input-edit-title {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--primary);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  outline: none;
+  background: #fff;
+}
+
+.edit-pages-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-edit-pages {
+  width: 80px;
+  padding: 6px 8px;
+  border: 1px solid var(--primary);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  outline: none;
+  background: #fff;
+}
+
+.pages-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.btn-save-edit {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-save-edit:hover {
+  opacity: 0.9;
 }
 
 .btn-remove {
@@ -272,12 +377,4 @@
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   font-size: 0.9rem;
-}
-
-.book-thumb {
-  width: 36px;
-  height: 50px;
-  object-fit: cover;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
