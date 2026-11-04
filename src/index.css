@@ -1,6 +1,3 @@
-/* =========================================
-   Estilos Globais e Fundo Personalizado
-   ========================================= */
 :root {
   --content-bg: #ffffff;
   --primary-color: #ff4785;
@@ -41,7 +38,7 @@ body {
   border-radius: var(--border-radius);
   border: 2px solid #ffd1e3;
   box-shadow: 0 15px 35px rgba(255, 71, 133, 0.15);
-  padding: 2rem;
+  padding: 0 2rem 2rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;

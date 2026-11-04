@@ -4,35 +4,6 @@
   gap: 1.2rem;
 }
 
-/* Abas de Navegação Superior */
-.steps-menu {
-  display: flex;
-  justify-content: space-between;
-  background: #fff0f5;
-  border: 1px solid #ffccd8;
-  border-radius: 12px;
-  padding: 6px;
-  margin-bottom: 0.5rem;
-}
-
-.step-item {
-  flex: 1;
-  text-align: center;
-  padding: 8px 12px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #6b7280;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s;
-}
-
-.step-item.active {
-  background-color: #ff4785;
-  color: white;
-  box-shadow: 0 3px 10px rgba(255, 71, 133, 0.3);
-}
-
 /* Caixa do Leitor por Câmera */
 .camera-box {
   display: flex;
@@ -44,15 +15,22 @@
 .btn-start-cam {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #ff4785, #ff75a0);
-  color: white;
+  background: linear-gradient(135deg, #ff75a0, #db3f73, #ff75a0);
+  color: #ffffff;
   border: none;
-  border-radius: 12px;
+  border-radius: 20px;
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(255, 71, 133, 0.25);
   transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lucide-camera {
+  margin-right: 10px;
 }
 
 .btn-start-cam:hover {
@@ -64,7 +42,7 @@
   background: #fff5f8;
   border: 1px solid #ffd1e3;
   padding: 1rem;
-  border-radius: 12px;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
@@ -83,7 +61,7 @@
 .search-input-wrapper input {
   flex: 1;
   padding: 0.75rem 1rem;
-  border: 1px solid #ffd1e3;
+  border: 2px solid #ffd1e3;
   border-radius: 10px;
   font-size: 0.9rem;
   outline: none;
@@ -99,9 +77,15 @@
   color: white;
   border: none;
   padding: 0 1.25rem;
-  border-radius: 10px;
+  border-radius: 15px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.search-input-wrapper button:hover {
+  background-color: #111111;
+  color: white;
+  opacity: 0.9;
 }
 
 /* Lista de Livros */
@@ -119,23 +103,35 @@
 
 .unread-badge {
   font-size: 0.75rem;
-  background: #fff0f5;
-  color: #ff4785;
-  padding: 0.25rem 0.6rem;
-  border-radius: 12px;
+  background-color: #ff9ec2;
+  color: #111111;
+  padding: 4px 10px;
+  border-radius: 15px;
   font-weight: 600;
   border: 1px solid #ffccd8;
+  margin-right: 5px;
 }
 
 .btn-remove-all {
-  background: #fee2e2;
+  background: #fff5f8;
   color: #dc2626;
-  border: none;
+  border: 1px solid #ff4785;
   padding: 4px 10px;
-  border-radius: 8px;
+  border-radius: 15px;
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
+  justify-content: center;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.lucide-trash {
+  margin-bottom: -3px;
+}
+
+.btn-remove-all:hover {
+  opacity: 0.9;
 }
 
 .books-list {
@@ -178,8 +174,8 @@
 
 .checkbox-wrapper input {
   accent-color: #ff4785;
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
 }
 
 .book-thumb {
@@ -258,7 +254,7 @@
 .btn-remove {
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: #ff4785;
   cursor: pointer;
   font-size: 1rem;
   padding: 4px;
@@ -284,14 +280,10 @@
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: opacity 0.2s;
 }
 
-.scanner-actions button:hover:not(:disabled) {
+.scanner-actions button:hover {
+  background-color: #111111;
+  color: white;
   opacity: 0.9;
-}
-
-.scanner-actions button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }

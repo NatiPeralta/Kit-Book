@@ -58,28 +58,29 @@
   margin-top: 0.25rem;
 }
 
-.btn-raffle {
-  font-size: 1.05rem;
+.btn-raffle{
+  width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.25);
+  background-color: #111111;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.btn-raffle:hover:not(:disabled) {
-  opacity: 0.95;
-  transform: translateY(-1px);
-}
-
-.btn-raffle:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.btn-raffle:hover {
+  background-color: #111111;
+  color: white;
+  opacity: 0.9;
 }
 
 .raffle-actions {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: 0.5rem;
 }
 
 .raffle-actions button {

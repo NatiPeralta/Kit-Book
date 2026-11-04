@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { BrowserBarcodeReader } from '@zxing/library';
 import { searchBookByIsbnOrQuery } from '../../services/googleBooks';
+import { Camera, Trash2, Pencil } from 'lucide-react';
 import './BookScanner.css';
 
 export default function BookScanner({ onConfirmBooks, onNext }) {
@@ -129,7 +130,7 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
 
   return (
     <div className="scanner-container">
-      <h3>📷 Leitor de Livros por Foto ou Busca</h3>
+      <h3>Leitor de Livros por Foto ou Busca</h3>
       <p className="scanner-subtitle">
         Tire uma foto do código de barras (ISBN) na contracapa do livro ou busque pelo nome para puxar os dados.
       </p>
@@ -146,11 +147,12 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
         />
         
         <button 
-          className="btn-primary btn-start-cam" 
+          className="btn-start-cam" 
           onClick={() => fileInputRef.current.click()}
           disabled={isLoading}
         >
-          {isLoading ? 'Processando imagem...' : '📸 Tirar Foto do Código de Barras'}
+          <Camera size={25} />
+          {isLoading ? 'Processando imagem...' : 'Tirar Foto do Código de Barras'}
         </button>
 
         {scanError && <p className="error-message">{scanError}</p>}
@@ -162,7 +164,7 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
         <div className="search-input-wrapper">
           <input 
             type="text" 
-            placeholder="Ex: Esquecidos de Domingo ou 978..." 
+            placeholder="Ex: Esquecidos de Domingo ou Harry..." 
             value={searchQuery} 
             onChange={(e) => setSearchQuery(e.target.value)} 
           />
@@ -179,11 +181,8 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
           <div className="header-actions">
             <span className="unread-badge">{unreadCount} prontos para sorteio</span>
             {detectedBooks.length > 0 && (
-              <button 
-                className="btn-remove-all" 
-                onClick={handleRemoveAllBooks}
-              >
-                Remover Todos
+              <button className="btn-remove-all" onClick={handleRemoveAllBooks}>
+                <Trash2 size={15} /> Remover Todos
               </button>
             )}
           </div>
@@ -232,8 +231,10 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
                     </div>
                   ) : (
                     <div className="book-info" onClick={() => startEditing(book)}>
-                      <span className="book-title">{book.title} ✏️</span>
-                      <span className="book-author">{book.author} • <strong>{book.pages || 300} págs</strong> (clique para editar)</span>
+                      <span className="book-title">
+                        {book.title} <Pencil size={14} style={{ display: 'inline', marginLeft: '4px', color: '#ff4785' }} />
+                      </span>
+                      <span className="book-author"><strong>{book.author} • {book.pages || 300} págs (clique para editar)</strong></span>
                     </div>
                   )}
 

@@ -2,11 +2,12 @@ import { useState } from 'react';
 import BookScanner from './components/BookScanner/BookScanner';
 import BookRaffle from './components/BookRaffle/BookRaffle';
 import ScheduleBuilder from './components/ScheduleBuilder/ScheduleBuilder';
-import Header from "./components/Header/Header"
+import Header from "./components/Header/Header";
+import StepNavigation from './components/StepNavigation/StepNavigation';
 import './App.css';
 
 export default function App() {
-  const [step, setStep] = useState(1); // Iniciando no Passo 1!
+  const [step, setStep] = useState(1); // Passo atual (1, 2 ou 3)
   const [booksList, setBooksList] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
 
@@ -15,11 +16,7 @@ export default function App() {
       <Header />
 
       {/* Indicador de Passos */}
-      <div className="steps-indicator">
-        <span className={step === 1 ? 'active' : ''}>1. Livros</span>
-        <span className={step === 2 ? 'active' : ''}>2. Sorteio</span>
-        <span className={step === 3 ? 'active' : ''}>3. Cronograma</span>
-      </div>
+      <StepNavigation currentStep={step} setStep={setStep}/>
 
       <main className="app-content">
         {step === 1 && (

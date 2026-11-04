@@ -71,7 +71,7 @@ export default function BookRaffle({ books, onSelectBook, onBack, onNext }) {
 
   return (
     <div className="raffle-container">
-      <h3>🐾 Sorteio KitBook</h3>
+      <h3>Sorteio KitBook</h3>
       <p className="raffle-subtitle">Deixe a sorte felina escolher sua próxima leitura entre {bookList.length} livros disponíveis.</p>
 
       {/* Caixa de Exibição do Sorteio */}
@@ -89,11 +89,11 @@ export default function BookRaffle({ books, onSelectBook, onBack, onNext }) {
 
       {/* Botão de Ação do Sorteio */}
       <button 
-        className="btn-primary btn-raffle" 
+        className="btn-raffle" 
         onClick={handleRaffle} 
         disabled={isRolling}
       >
-        {isRolling ? 'Embaralhando páginas...' : '🎲 Sortear Livro Agora'}
+        {isRolling ? 'Embaralhando páginas...' : 'Sortear Livro Agora'}
       </button>
 
       {/* Navegação */}
