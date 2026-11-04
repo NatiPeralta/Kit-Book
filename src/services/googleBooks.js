@@ -1,113 +1,175 @@
+
 export async function searchBookByIsbnOrQuery(query) {
   const cleanedQuery = query.trim();
+
   if (!cleanedQuery) return null;
 
-  const cacheKey = `kitbook_cache_${cleanedQuery.toLowerCase()}`;
+  // Remove espaços e hífens do ISBN
+  const normalizedQuery = cleanedQuery.replace(/[\s-]/g, "");
+
+  const isIsbn = /^\d{10}(\d|X)$/i.test(normalizedQuery) ||
+                 /^\d{13}$/.test(normalizedQuery);
+
+  // Nova versão do cache para evitar reutilizar resultados antigos
+  const cacheKey = `kitbook_cache_v2_${cleanedQuery.toLowerCase()}`;
+
   const cachedData = localStorage.getItem(cacheKey);
+
   if (cachedData) {
-    return JSON.parse(cachedData);
+    try {
+      return JSON.parse(cachedData);
+    } catch {
+      localStorage.removeItem(cacheKey);
+    }
   }
 
-  const isIsbn = /^\d{10,13}$/.test(cleanedQuery);
-  const apiKey = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY || '';
+  const apiKey = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY || "";
+
+  // Função responsável por consultar a API
+  async function fetchBooks(searchTerm) {
+    const params = new URLSearchParams({
+      q: searchTerm,
+      maxResults: "10",
+      projection: "full"
+    });
+
+    if (apiKey) {
+      params.append("key", apiKey);
+    }
+
+    const url = `https://www.googleapis.com/books/v1/volumes?${params}`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Erro na API: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return data.items || [];
+  }
+
+  // Calcula a quantidade de informações disponíveis
+  function getCompleteness(item) {
+    const info = item.volumeInfo || {};
+
+    let score = 0;
+
+    if (info.title) score += 1;
+    if (info.authors?.length) score += 2;
+    if (info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail) {
+      score += 3;
+    }
+    if (info.pageCount) score += 3;
+
+    return score;
+  }
 
   try {
-    let items = [];
-    let titleFallback = cleanedQuery;
-    let authorFallback = 'Autor desconhecido';
+    let isbnResults = [];
+    let searchResults = [];
 
-    // 1. Se for ISBN, tenta buscar pelo código específico
+    // 1. Busca pelo ISBN ou pelo texto digitado
     if (isIsbn) {
-      let isbnUrl = `https://googleapis.com{cleanedQuery}`;
-      if (apiKey) isbnUrl += `&key=${apiKey}`;
-      
-      const res = await fetch(isbnUrl);
-      const data = await res.json();
-      if (data.items && data.items.length > 0) {
-        items = data.items;
-        // Guarda o título e autor encontrados pelo ISBN para o caso de precisar da busca geral
-        titleFallback = items[0].volumeInfo?.title || titleFallback;
-        authorFallback = items[0].volumeInfo?.authors ? items[0].volumeInfo.authors.join(', ') : authorFallback;
-      }
-    }
-
-    // 2. CORREÇÃO CRÍTICA: Se não for ISBN, ou se a busca por ISBN não trouxe resultados,
-    // OU se o resultado do ISBN veio sem capa ou sem páginas, fazemos a busca textual ampla.
-    const hasValidItem = items.length > 0 && items[0].volumeInfo?.imageLinks?.thumbnail && items[0].volumeInfo?.pageCount;
-
-    if (!hasValidItem) {
-      // Se viemos do ISBN, pesquisamos pelo Título + Autor para achar uma edição mais completa
-      let cleanTitle = titleFallback.split(':')[0].split('-')[0].trim();
-      
-      const searchQuery = `intitle:${cleanTitle}`;
-      
-      let generalUrl = `https://googleapis.com{encodeURIComponent(searchQuery)}&maxResults=10`;
-      if (apiKey) generalUrl += `&key=${apiKey}`;
-
-      const res = await fetch(generalUrl);
-      const data = await res.json();
-      
-      if (data.items && data.items.length > 0) {
-        items = data.items; // Substitui pelos resultados mais amplos
-      }
+      isbnResults = await fetchBooks(`isbn:${normalizedQuery}`);
     } else {
-      // Se falhar com intitle:, tenta a busca textual ultra ampla igual ao input manual puro
-      let broadUrl = `https://googleapis.com{encodeURIComponent(cleanTitle)}&maxResults=10`;
-      if (apiKey) broadUrl += `&key=${apiKey}`;
-      const broadRes = await fetch(broadUrl);
-      const broadData = await broadRes.json();
-      if (broadData.items) items = broadData.items;
+      searchResults = await fetchBooks(cleanedQuery);
     }
 
-    if (items.length > 0) {
-      // Procura o item mais completo (que tenha capa e páginas) entre os resultados disponíveis
-      let bestItem = items[0];
-      for (let item of items) {
-        if (item.volumeInfo?.imageLinks?.thumbnail && item.volumeInfo?.pageCount) {
-          bestItem = item;
-          break;
-        }
-      }
+    // 2. Identifica o melhor resultado da primeira busca
+    const firstResults = isIsbn ? isbnResults : searchResults;
 
-      const bookInfo = bestItem.volumeInfo;
-      
-      let thumbnail = bookInfo.imageLinks?.thumbnail || bookInfo.imageLinks?.smallThumbnail || '';
-      if (thumbnail.startsWith('http:')) {
-        thumbnail = thumbnail.replace('http:', 'https:');
-      }
+    let bestItem = firstResults.sort(
+      (a, b) => getCompleteness(b) - getCompleteness(a)
+    )[0];
 
-      const bookResult = {
-        id: Date.now() + Math.random(),
-        title: bookInfo.title || titleFallback,
-        author: bookInfo.authors ? bookInfo.authors.join(', ') : authorFallback,
-        pages: bookInfo.pageCount || 300,
-        thumbnail: thumbnail,
-        unread: true
-      };
+    // 3. Se faltarem informações, realiza uma busca complementar
+    const currentInfo = bestItem?.volumeInfo || {};
 
-      localStorage.setItem(cacheKey, JSON.stringify(bookResult));
-      return bookResult;
+    const needsFallback =
+      !bestItem ||
+      !currentInfo.imageLinks ||
+      !currentInfo.pageCount;
+
+    if (isIsbn && needsFallback) {
+      const title = currentInfo.title || "";
+      const author = currentInfo.authors?.join(" ") || "";
+
+      // Aproveita o título e o autor encontrados pelo ISBN
+      const fallbackQuery = title
+        ? `intitle:${title} ${author ? `inauthor:${author}` : ""}`
+        : normalizedQuery;
+
+      searchResults = await fetchBooks(fallbackQuery);
     }
 
-    // Fallback absoluto
-    return {
+    // 4. Seleciona o resultado mais completo entre as buscas
+    const allResults = [...firstResults, ...searchResults];
+
+    if (allResults.length === 0) {
+      console.warn("Nenhum livro encontrado:", cleanedQuery);
+      return null;
+    }
+
+    allResults.sort(
+      (a, b) => getCompleteness(b) - getCompleteness(a)
+    );
+
+    // Prioriza o resultado que possui mais metadados
+    bestItem = allResults[0];
+
+    // 5. Combina os dados para aproveitar informações das duas buscas
+    const primaryInfo = bestItem.volumeInfo || {};
+    const secondaryInfo =
+      allResults.find(
+        item =>
+          item !== bestItem &&
+          item.volumeInfo?.imageLinks &&
+          item.volumeInfo?.pageCount
+      )?.volumeInfo || {};
+
+    const thumbnail =
+      primaryInfo.imageLinks?.thumbnail ||
+      primaryInfo.imageLinks?.smallThumbnail ||
+      secondaryInfo.imageLinks?.thumbnail ||
+      secondaryInfo.imageLinks?.smallThumbnail ||
+      "";
+
+    const bookResult = {
       id: Date.now() + Math.random(),
-      title: titleFallback,
-      author: authorFallback,
-      pages: 300,
-      thumbnail: '',
+
+      title:
+        primaryInfo.title ||
+        secondaryInfo.title ||
+        cleanedQuery,
+
+      author:
+        primaryInfo.authors?.join(", ") ||
+        secondaryInfo.authors?.join(", ") ||
+        "Autor desconhecido",
+
+      // Não inventa a quantidade de páginas
+      pages:
+        primaryInfo.pageCount ||
+        secondaryInfo.pageCount ||
+        null,
+
+      thumbnail: thumbnail.replace(/^http:/, "https:"),
+
       unread: true
     };
+
+    // 6. Salva o resultado no cache
+    localStorage.setItem(
+      cacheKey,
+      JSON.stringify(bookResult)
+    );
+
+    return bookResult;
 
   } catch (error) {
-    console.error('Erro na requisição do Google Books:', error);
-    return {
-      id: Date.now() + Math.random(),
-      title: cleanedQuery,
-      author: 'Autor desconhecido',
-      pages: 300,
-      thumbnail: '',
-      unread: true
-    };
+    console.error("Erro na busca de livros:", error);
+    return null;
   }
 }
