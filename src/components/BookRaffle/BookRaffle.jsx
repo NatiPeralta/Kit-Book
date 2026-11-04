@@ -37,9 +37,11 @@ export default function BookRaffle({ books, onSelectBook, onBack, onNext }) {
   const handleRaffle = () => {
     if (bookList.length === 0) return;
 
-    setIsRolling(true);
+    // Limpa o livro sorteado anteriormente para permitir um novo sorteio real
     setWinnerBook(null);
     localStorage.removeItem('kitbook_winner_book');
+
+    setIsRolling(true);
 
     let counter = 0;
     const maxRolls = 20; // Quantas vezes o nome vai trocar antes de parar
@@ -52,7 +54,8 @@ export default function BookRaffle({ books, onSelectBook, onBack, onNext }) {
 
       if (counter >= maxRolls) {
         clearInterval(interval);
-        // Sorteio final oficial
+
+        // Sorteia um novo livro aleatório da lista
         const finalWinner = bookList[Math.floor(Math.random() * bookList.length)];
 
         // Garante que as páginas retornem o valor atualizado pós edição do usuário
