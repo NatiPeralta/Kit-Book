@@ -206,7 +206,7 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
 
                     <div className="book-title-row">
                         <span className="book-title">
-                        {book.title} <Pencil size={14} style={{ display: 'inline', marginLeft: '4px', color: '#ff4785' }} />
+                        {book.title} <Pencil size={14} className="edit-icon" />
                       </span>
                       </div>
 

@@ -201,6 +201,12 @@
   color: #1f2937;
 }
 
+.edit-icon {
+  display: inline;
+  margin-left: 4px;
+  color: #ff4785;
+}
+
 .book-author {
   font-size: 0.75rem;
   color: #6b7280;
@@ -349,6 +355,10 @@
 
   .book-title {
     font-size: 15px;
+  }
+
+  .edit-icon {
+    display: none;
   }
 
   .btn-remove {
