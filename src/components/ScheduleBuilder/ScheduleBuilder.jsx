@@ -10,8 +10,13 @@ export default function ScheduleBuilder({ book, onBack }) {
 
   const targetBook = book || fallbackBook;
 
+  const [unitType, setUnitType] = useState('páginas'); // 'páginas' e 'capítulos'
+
+  // Guardamos o total de páginas original e estimamos uma quantidade padrão de capítulos (ex: 1 capítulo a cada 15 páginas)
+  const totalPagesOriginal = targetBook.pages ? Number(targetBook.pages) : 300;
+  const estimatedChapters = Math.max(Math.round(totalPagesOriginal / 15), 1);
+
   // Estados do formulário sincronizados com as páginas reais do livro escolhido
-  const [unitType, setUnitType] = useState('páginas'); // 'páginas', 'capítulos', '%'
   const [totalUnits, setTotalUnits] = useState(targetBook.pages ? Number(targetBook.pages) : 300);
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState('');
@@ -24,6 +29,16 @@ export default function ScheduleBuilder({ book, onBack }) {
   });
 
   const [error, setError] = useState('');
+
+  // Sempre que o usuário trocar entre Páginas e Capítulos, atualizamos o número total sugerido
+  const handleUnitTypeChange = (newType) => {
+    setUnitType(newType);
+    if (newType === 'capítulos') {
+      setTotalUnits(estimatedChapters); // Sugere os capítulos estimados
+    } else {
+      setTotalUnits(totalPagesOriginal); // Retorna às páginas originais do livro
+    }
+  };
 
   // Sempre que o cronograma for gerado ou alterado, salvamos no localStorage
   useEffect(() => {
@@ -65,7 +80,7 @@ export default function ScheduleBuilder({ book, onBack }) {
 
   return (
     <div className="schedule-container">
-      <h3>📅 Cronograma Felino de Leitura</h3>
+      <h3>Cronograma de Leitura</h3>
       <p className="schedule-subtitle">
         Livro escolhido: <strong>{targetBook.title}</strong>
       </p>
@@ -74,21 +89,26 @@ export default function ScheduleBuilder({ book, onBack }) {
         <form className="schedule-form" onSubmit={handleCalculate}>
           <div className="form-group">
             <label>Tipo de Unidade:</label>
-            <select value={unitType} onChange={(e) => setUnitType(e.target.value)}>
+            <select value={unitType} onChange={(e) => handleUnitTypeChange(e.target.value)}>
               <option value="páginas">Páginas (Livro Físico/E-reader)</option>
               <option value="capítulos">Capítulos</option>
-              <option value="%">Porcentagem (%) - Kindle</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label>Quantidade Total ({unitType}):</label>
+            <label>Quantidade Total ({unitType}):
+                {unitType === 'capítulos' && (
+              <span style={{ fontSize: '0.75rem', color: '#ff4785', marginLeft: '6px' }}>
+                (Estimado com base nas páginas. Sinta-se livre para ajustar se souber o exato!)
+              </span>
+            )}           
+            </label>
             <input 
-              type="number" 
-              value={totalUnits} 
-              onChange={(e) => setTotalUnits(e.target.value)} 
-              min="1"
-              required 
+                type="number" 
+                value={totalUnits} 
+                onChange={(e) => setTotalUnits(e.target.value)}
+                min="1"
+                required 
             />
           </div>
 
@@ -145,11 +165,11 @@ export default function ScheduleBuilder({ book, onBack }) {
 
           <div className="metrics-grid">
             <div className="metric-box">
-              <span className="metric-label">Meta Diária</span>
+              <span className="metric-label">Meta Diária ({unitType})</span>
               <span className="metric-value">{scheduleResult.dailyMeta}</span>
             </div>
             <div className="metric-box">
-              <span className="metric-label">Meta Semanal</span>
+              <span className="metric-label">Meta Semanal ({unitType})</span>
               <span className="metric-value">{scheduleResult.weeklyMeta}</span>
             </div>
           </div>
