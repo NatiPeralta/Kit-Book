@@ -151,6 +151,18 @@
   color: var(--text-main);
 }
 
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paw-icon {
+  width: 20px;
+  height: 20px;
+  margin-left: 5px;
+}
+
 @media (max-width: 600px) {
   .routable-title {
     font-size: 1.2rem;

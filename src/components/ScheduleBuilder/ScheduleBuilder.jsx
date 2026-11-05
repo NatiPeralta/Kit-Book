@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { generateSchedule } from '../../utils/scheduleCalculator';
 import './ScheduleBuilder.css';
+import icon from '../../assets/icon.png';
 
 export default function ScheduleBuilder({ book, onBack }) {
   // Tenta pegar o livro passado por prop, se não houver, busca do localStorage (salvo no sorteio)
@@ -16,8 +17,20 @@ export default function ScheduleBuilder({ book, onBack }) {
   const [endDate, setEndDate] = useState('');
   const [readOnWeekends, setReadOnWeekends] = useState(true);
   
-  const [scheduleResult, setScheduleResult] = useState(null);
+  // Tenta carregar o resultado do cronograma salvo no localStorage ao abrir a tela
+  const [scheduleResult, setScheduleResult] = useState(() => {
+    const saved = localStorage.getItem('kitbook_saved_schedule');
+    return saved ? JSON.parse(saved) : null;
+  });
+
   const [error, setError] = useState('');
+
+  // Sempre que o cronograma for gerado ou alterado, salvamos no localStorage
+  useEffect(() => {
+    if (scheduleResult) {
+      localStorage.setItem('kitbook_saved_schedule', JSON.stringify(scheduleResult));
+    }
+  }, [scheduleResult]);
 
   const handleCalculate = (e) => {
     e.preventDefault();
@@ -42,6 +55,12 @@ export default function ScheduleBuilder({ book, onBack }) {
     }
 
     setScheduleResult(result);
+  };
+
+  // Função para limpar o cronograma salvo e permitir novo cálculo
+  const handleResetSchedule = () => {
+    setScheduleResult(null);
+    localStorage.removeItem('kitbook_saved_schedule');
   };
 
   return (
@@ -136,11 +155,11 @@ export default function ScheduleBuilder({ book, onBack }) {
           </div>
 
           <div className="schedule-actions">
-            <button className="btn-secondary" onClick={() => setScheduleResult(null)}>
+            <button className="btn-secondary" onClick={handleResetSchedule}>
               Editar Datas
             </button>
             <button className="btn-primary" onClick={() => alert('Cronograma salvo com sucesso! Boa leitura 📖✨')}>
-              Concluir & Salvar 🐱
+              Concluir & Salvar <img className='paw-icon' src={icon} alt="Ícone da patinha" />
             </button>
           </div>
         </div>
