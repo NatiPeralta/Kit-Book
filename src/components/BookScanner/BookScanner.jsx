@@ -196,27 +196,9 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
             {detectedBooks.map((book) => (
               <li key={book.id} className={`book-item ${book.unread ? 'selected' : ''}`}>
                 <div className="book-item-content">
-                  <label className="checkbox-wrapper">
-                    <input 
-                      type="checkbox" 
-                      checked={book.unread} 
-                      onChange={() => toggleUnread(book.id)} 
-                    />
-                    {book.thumbnail && <img src={book.thumbnail} alt={book.title} className="book-thumb"/>}
 
-                    <div className="book-title-row">
-                        <span className="book-title">
-                        {book.title} <Pencil size={14} className="edit-icon" />
-                      </span>
-                      </div>
-
-                  <button className="btn-remove" onClick={() => handleRemoveBook(book.id)}>
-                    ✕
-                  </button>
-                  </label>
-
-                  {/* Bloco de Edição Inline */}
                   {editingId === book.id ? (
+                    /* Bloco de Edição Inline */
                     <div className="edit-block-container">
                       <input 
                         type="text" 
@@ -235,21 +217,44 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
                       </div>
                       <button className="btn-save-edit" onClick={() => saveEditing(book.id)}>
                           Salvar
-                        </button>
+                      </button>
                     </div>
-                  ) : (
-                    <div className="book-info" onClick={() => startEditing(book)}>
-                      <div className="book-details-row">
-                      <span className="book-author"><strong>{book.author} • {book.pages || 300} págs (clique para editar)</strong></span>
-                      </div>
+              ) : (
+                <div className="book-view-wrapper" onClick={() => startEditing(book)}>
+                  <div className="book-main-content">
+                      <label className="checkbox-wrapper" onClick={(e) => e.stopPropagation()}>
+                          <input 
+                          type="checkbox" 
+                          checked={book.unread} 
+                          onChange={() => toggleUnread(book.id)} 
+                      />
+                      </label>
+
+                      {book.thumbnail && <img src={book.thumbnail} alt={book.title} className="book-thumb"/>}
+  
+                    <div className="book-info">
+                        <span className="book-title">
+                          {book.title} <Pencil size={14} className="edit-icon" />
+                        </span>
+                        <span className="book-author">
+                          <strong>{book.author} • {book.pages || 300} págs (clique para editar)</strong>
+                        </span> 
                     </div>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                  </div>
+
+                    <button className="btn-remove" onClick={(e) => { e.stopPropagation(); handleRemoveBook(book.id); }}>
+                      ✕
+                    </button>
+                   </div>
+                )}
+              
+              </div> 
+          </li>
+      ))}
+  </ul>
+)}
+
+</div>
 
       <div className="scanner-actions">
         <button 
