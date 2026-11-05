@@ -1,4 +1,4 @@
-import logoImg from '../../assets/logo.png'; // Ajuste o caminho conforme a sua pasta de assets
+import logoImg from '../../assets/Logo.png'; // Ajuste o caminho conforme a sua pasta de assets
 import './Header.css';
 
 export default function Header() {
