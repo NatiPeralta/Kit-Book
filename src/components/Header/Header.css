@@ -19,3 +19,32 @@
   font-size: 0.9rem;
   font-weight: 500;
 }
+
+@media (max-width: 600px) {
+
+  .app-logo-img {
+  width: 90%;
+  }
+
+  .app-slogan {
+  margin-bottom: -10px;
+  font-size: 0.8rem;
+}
+}
+
+@media (max-width: 400px) {
+
+  .app-slogan {
+  font-size: 0.7rem;
+}
+}
+
+@media (max-width: 350px) {
+
+  .app-logo-img {
+  width: 95%;
+}
+  .app-slogan {
+  margin-bottom: -15px;
+}
+}

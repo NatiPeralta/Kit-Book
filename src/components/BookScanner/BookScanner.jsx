@@ -203,6 +203,16 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
                       onChange={() => toggleUnread(book.id)} 
                     />
                     {book.thumbnail && <img src={book.thumbnail} alt={book.title} className="book-thumb"/>}
+
+                    <div className="book-title-row">
+                        <span className="book-title">
+                        {book.title} <Pencil size={14} style={{ display: 'inline', marginLeft: '4px', color: '#ff4785' }} />
+                      </span>
+                      </div>
+
+                  <button className="btn-remove" onClick={() => handleRemoveBook(book.id)}>
+                    ✕
+                  </button>
                   </label>
 
                   {/* Bloco de Edição Inline */}
@@ -222,26 +232,18 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
                           className="input-edit-pages"
                         />
                         <span>págs</span>
-                        <button 
-                          className="btn-save-edit" 
-                          onClick={() => saveEditing(book.id)}
-                        >
+                      </div>
+                      <button className="btn-save-edit" onClick={() => saveEditing(book.id)}>
                           Salvar
                         </button>
-                      </div>
                     </div>
                   ) : (
                     <div className="book-info" onClick={() => startEditing(book)}>
-                      <span className="book-title">
-                        {book.title} <Pencil size={14} style={{ display: 'inline', marginLeft: '4px', color: '#ff4785' }} />
-                      </span>
+                      <div className="book-details-row">
                       <span className="book-author"><strong>{book.author} • {book.pages || 300} págs (clique para editar)</strong></span>
+                      </div>
                     </div>
                   )}
-
-                  <button className="btn-remove" onClick={() => handleRemoveBook(book.id)}>
-                    ✕
-                  </button>
                 </div>
               </li>
             ))}

@@ -43,3 +43,12 @@ body {
   flex-direction: column;
   gap: 1.5rem;
 }
+
+@media (max-width: 600px) {
+  #root {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: 0;
+}
+}
