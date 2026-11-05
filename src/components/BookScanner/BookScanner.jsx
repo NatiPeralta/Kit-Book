@@ -181,8 +181,9 @@ export default function BookScanner({ onConfirmBooks, onNext }) {
           <div className="header-actions">
             <span className="unread-badge">{unreadCount} prontos para sorteio</span>
             {detectedBooks.length > 0 && (
-              <button className="btn-remove-all" onClick={handleRemoveAllBooks}>
-                <Trash2 size={15} /> Remover Todos
+              <button className="btn-remove-all" onClick={handleRemoveAllBooks} title="Remover Todos">
+                <Trash2 size={15} /> 
+                <span className="btn-text">Remover Todos</span>
               </button>
             )}
           </div>

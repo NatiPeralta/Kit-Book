@@ -86,3 +86,10 @@
 .raffle-actions button {
   flex: 1;
 }
+
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+  }
+
+}

@@ -19,7 +19,7 @@ export default function StepNavigation({ currentStep, setStep, canProceed }) {
         onClick={() => handleTabClick(1)}
       >
         <BookOpen size={18} className="step-icon" />
-        <span>1. Livros</span>
+        <span className="step-label">1. Livros</span>
       </div>
 
       <div 
@@ -27,7 +27,7 @@ export default function StepNavigation({ currentStep, setStep, canProceed }) {
         onClick={() => handleTabClick(2)}
       >
         <Trophy size={18} className="step-icon" />
-        <span>2. Sorteio</span>
+        <span className="step-label">2. Sorteio</span>
       </div>
 
       <div 
@@ -35,7 +35,7 @@ export default function StepNavigation({ currentStep, setStep, canProceed }) {
         onClick={() => handleTabClick(3)}
       >
         <Calendar size={18} className="step-icon" />
-        <span>3. Cronograma</span>
+        <span className="step-label">3. Cronograma</span>
       </div>
     </div>
   );

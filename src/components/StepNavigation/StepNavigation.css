@@ -48,3 +48,28 @@
 .step-icon {
   stroke-width: 2.2px;
 }
+
+/* Adicione no final do seu StepNavigation.css */
+@media (max-width: 600px) {
+  .steps-menu {
+    padding: 4px;
+    gap: 2px;
+  }
+
+  .step-item {
+    flex-direction: column;
+    padding: 8px 2px;
+    gap: 3px;
+    text-align: center;
+  }
+
+  .step-label {
+    font-size: 0.65rem;
+    white-space: nowrap; /* Evita quebras de linha feias */
+  }
+
+  .step-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
