@@ -4,6 +4,7 @@ import BookRaffle from './components/BookRaffle/BookRaffle';
 import ScheduleBuilder from './components/ScheduleBuilder/ScheduleBuilder';
 import Header from "./components/Header/Header";
 import StepNavigation from './components/StepNavigation/StepNavigation';
+import Footer from './components/Footer/Footer';
 import './App.css';
 
 export default function App() {
@@ -53,6 +54,7 @@ export default function App() {
           </section>
         )}
       </main>
+      <Footer />
     </div>
   );
 }
